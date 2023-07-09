@@ -31,10 +31,6 @@ jobs:
           TOOLCHAIN_VERSION: "nightly"
           ARCHIVE_TYPES: ${{ matrix.archive }}
       - uses: actions/upload-artifact@v3
-      - name: upload artifacts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: my-artifact
-          path: |
-            target/wheels
+          path: target/wheels
