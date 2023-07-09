@@ -45,3 +45,63 @@ fn marlowepy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(example, m)?)?;
     Ok(())
 }
+
+
+pub fn main() {}
+
+
+#[test]
+#[cfg(target_os="macos")]
+fn make_it_so() {
+    
+     // Check if maturin package is installed
+     let check_status = 
+        Command::new("pip")
+            .arg("show")
+            .arg("maturin")
+            .status();
+
+    match check_status {
+        Ok(exit_status) => {
+            if exit_status.success()  {
+                println!("maturin is already installed");
+                return; // Skip installation
+            }
+        }
+        Err(_) => {
+            println!("Failed to check maturin installation");
+            return; // Skip installation
+        }
+    }
+
+    // Install maturin package using pip
+    let install_status = Command::new("pip")
+        .arg("install")
+        .arg("maturin")
+        .status();
+
+    if let Ok(status) = install_status {
+        if  status.success() {
+            println!("maturin installed successfully");
+        } else {
+            println!("Failed to install maturin");
+        }
+    } else {
+        println!("Failed to execute pip command");
+    }
+
+
+    let status = std::process::Command::new("python")
+        .arg(r"maturin")
+        .arg("build")
+        .arg("--bindings") 
+        .arg("pyo3") 
+        .status()
+        .expect("Failed to execute post-build action");
+
+    if status.success() {
+        println!("Post-build action completed successfully");
+    } else {
+        println!("Post-build action failed");
+    }
+}
