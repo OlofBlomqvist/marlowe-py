@@ -1,4 +1,0 @@
-[build]
-image = "nucypher/rust-python"
-xargo = true
-build-std = false 
