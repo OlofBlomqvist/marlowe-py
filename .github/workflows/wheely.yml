@@ -1,6 +1,6 @@
 # .github/workflows/on-push.yml
 
-name: On Push Workflow
+name: Build Wheels
 
 on: 
   workflow_dispatch:
@@ -48,9 +48,15 @@ jobs:
           target: ${{ matrix.target }}
           default: true
 
-      - name: Run script
+      - name: Run bash script
         run: ${{ matrix.script }}
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        if: matrix.os != 'windows-latest'
+        shell: bash
+
+      - name: Run PowerShell script
+        run: ${{ matrix.script }}
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
