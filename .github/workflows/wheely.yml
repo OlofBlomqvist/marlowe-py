@@ -1,6 +1,6 @@
 # .github/workflows/on-push.yml
 
-name: On Push Workflow
+name: Build Wheels
 
 on: 
   workflow_dispatch:
@@ -15,21 +15,9 @@ on:
         default: 'all'
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    if: github.event.inputs.targets == 'all' || (matrix.os == 'ubuntu-latest' && github.event.inputs.targets == 'linux') || (matrix.os == 'windows-latest' && github.event.inputs.targets == 'windows') || (matrix.os == 'macos-latest' && github.event.inputs.targets == 'osx')
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            script: ./wheels.sh
-            target: x86_64-unknown-linux-musl
-          - os: windows-latest
-            script: ./wheels.ps1
-            target: x86_64-pc-windows-gnu
-          - os: macos-latest
-            script: ./wheels.sh
-            target: x86_64-apple-darwin
+  build_linux:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'linux'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -42,8 +30,7 @@ jobs:
           python-version: '3.11'
 
       - name: Set execute permissions (Unix)
-        run: chmod +x ${{ matrix.script }}
-        if: matrix.os != 'windows-latest'
+        run: chmod +x ./wheels.sh
 
       - name: Create directories
         run: mkdir -p target/wheels
@@ -52,16 +39,85 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-          target: ${{ matrix.target }}
+          target: x86_64-unknown-linux-musl
           default: true
 
       - name: Run bash script
-        run: ${{ matrix.script }}
+        run: ./wheels.sh
         shell: bash
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: target/wheels
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the action if no files are found
+
+  build_windows:
+    runs-on: windows-latest
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'windows'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Create directories
+        run: mkdir -p target/wheels
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: x86_64-pc-windows-gnu
+          default: true
+
       - name: Run PowerShell script
-        run: ${{ matrix.script }}
+        run: ./wheels.ps1
         shell: pwsh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: target/wheels
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the action if no files are found
+
+  build_osx:
+    runs-on: macos-latest
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'osx'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Set execute permissions (Unix)
+        run: chmod +x ./wheels.sh
+
+      - name: Create directories
+        run: mkdir -p target/wheels
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: x86_64-apple-darwin
+          default: true
+
+      - name: Run bash script
+        run: ./wheels.sh
+        shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
