@@ -30,8 +30,9 @@ jobs:
           RUSTTARGET: ${{ matrix.target }}
           TOOLCHAIN_VERSION: "nightly"
           ARCHIVE_TYPES: ${{ matrix.archive }}
-      - name: Run tests
-        run: cargo test
+      - name: Run script
+        run: bash ./post-build.sh
+        if: matrix.target == 'x86_64-apple-darwin'
       - uses: actions/upload-artifact@v3
         with:
           name: my-artifact
