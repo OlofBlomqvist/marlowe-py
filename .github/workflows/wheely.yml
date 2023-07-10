@@ -9,13 +9,16 @@ on:
         description: 'Branch to run the workflow on'
         required: true
         default: 'main'
+      targets:
+        description: 'Targets to build for (all, linux, windows, osx)'
+        required: true
+        default: 'all'
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest
             script: ./wheels.sh
@@ -39,12 +42,6 @@ jobs:
       - name: Create directories
         run: mkdir -p target/wheels
 
-      - name: Debug permissions
-        run: |
-          whoami
-          ls -la
-          ls -la target
-
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -54,12 +51,12 @@ jobs:
 
       - name: Run bash script
         run: ${{ matrix.script }}
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-latest' && (github.event.inputs.targets == 'all' || github.event.inputs.targets == 'linux' || github.event.inputs.targets == 'osx')
         shell: bash
 
       - name: Run PowerShell script
         run: ${{ matrix.script }}
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && (github.event.inputs.targets == 'all' || github.event.inputs.targets == 'windows')
         shell: pwsh
 
       - name: Upload artifact
