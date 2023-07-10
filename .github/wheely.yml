@@ -1,0 +1,60 @@
+# .github/workflows/on-push.yml
+
+name: On Push Workflow
+
+on: 
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the workflow on'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            script: ./on-push.sh
+            target: x86_64-unknown-linux-musl
+          - os: windows-latest
+            script: ./on-push.ps1
+            target: x86_64-pc-windows-gnu
+          - os: macos-latest
+            script: ./on-push.sh
+            target: x86_64-apple-darwin
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Create directories
+        run: mkdir -p target/wheels
+
+      - name: Debug permissions
+        run: |
+          whoami
+          ls -la
+          ls -la target
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: ${{ matrix.target }}
+          default: true
+
+      - name: Run script
+        run: ${{ matrix.script }}
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: target/wheels
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the action if no files are found
