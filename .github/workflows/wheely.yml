@@ -1,6 +1,6 @@
 # .github/workflows/on-push.yml
 
-name: Build Wheels
+name: On Push Workflow
 
 on: 
   workflow_dispatch:
@@ -17,6 +17,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    if: github.event.inputs.targets == 'all' || (matrix.os == 'ubuntu-latest' && github.event.inputs.targets == 'linux') || (matrix.os == 'windows-latest' && github.event.inputs.targets == 'windows') || (matrix.os == 'macos-latest' && github.event.inputs.targets == 'osx')
     strategy:
       matrix:
         include:
@@ -35,6 +36,11 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
       - name: Set execute permissions (Unix)
         run: chmod +x ${{ matrix.script }}
         if: matrix.os != 'windows-latest'
@@ -51,12 +57,10 @@ jobs:
 
       - name: Run bash script
         run: ${{ matrix.script }}
-        if: matrix.os != 'windows-latest' && (github.event.inputs.targets == 'all' || github.event.inputs.targets == 'linux' || github.event.inputs.targets == 'osx')
         shell: bash
 
       - name: Run PowerShell script
         run: ${{ matrix.script }}
-        if: matrix.os == 'windows-latest' && (github.event.inputs.targets == 'all' || github.event.inputs.targets == 'windows')
         shell: pwsh
 
       - name: Upload artifact
