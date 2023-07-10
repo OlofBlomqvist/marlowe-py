@@ -32,6 +32,10 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
+      - name: Set execute permissions (Unix)
+        run: chmod +x ${{ matrix.script }}
+        if: matrix.os != 'windows-latest'
+
       - name: Create directories
         run: mkdir -p target/wheels
 
