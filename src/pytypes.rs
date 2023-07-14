@@ -1,6 +1,9 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+pub(crate)fn to_py_err(s:&str) -> PyErr {
+    PyValueError::new_err(String::from(s))
+}
 
 #[pyclass]
 #[derive(Clone,Debug)]
@@ -33,6 +36,23 @@ impl WrappedDatum {
             Err(e) => Err(PyValueError::new_err(format!("did not work! {:?}",e)))
        }
     }
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn show_status(&self) -> PyResult<String> {
+        let instance = marlowe_lang::semantics::ContractInstance::from_datum(&self.0.clone());
+        match marlowe_lang::semantics::ContractSemantics::process(&instance) {
+            Ok((_,state)) => match state {
+                marlowe_lang::semantics::MachineState::Closed => Ok("Closed".into()),
+                marlowe_lang::semantics::MachineState::Faulted(e) => Err(to_py_err(&e)),
+                marlowe_lang::semantics::MachineState::ContractHasTimedOut => Ok("timed out".into()),
+                marlowe_lang::semantics::MachineState::WaitingForInput { expected, timeout } => {
+                    Ok(format!("waiting for input until {timeout}: \n {:?}", expected))
+                },
+                marlowe_lang::semantics::MachineState::ReadyForNextStep => todo!(),
+            }
+            Err(e) => Err(to_py_err(&format!("{:?}",e)))
+        }   
+    }
+   
 }
 
 #[pyclass]
@@ -122,6 +142,23 @@ impl WrappedContract {
             timeout_continuation: Some(Box::new(contract.0))
         }))
     }  
+
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn show_status(&self) -> PyResult<String> {
+        let instance = marlowe_lang::semantics::ContractInstance::new(&self.0.clone(), None);
+        match marlowe_lang::semantics::ContractSemantics::process(&instance) {
+            Ok((_,state)) => match state {
+                marlowe_lang::semantics::MachineState::Closed => Ok("Closed".into()),
+                marlowe_lang::semantics::MachineState::Faulted(e) => Err(to_py_err(&e)),
+                marlowe_lang::semantics::MachineState::ContractHasTimedOut => Ok("timed out".into()),
+                marlowe_lang::semantics::MachineState::WaitingForInput { expected, timeout } => {
+                    Ok(format!("waiting for input until {timeout}: \n {:?}", expected))
+                },
+                marlowe_lang::semantics::MachineState::ReadyForNextStep => todo!(),
+            }
+            Err(e) => Err(to_py_err(&format!("{:?}",e)))
+        }   
+    }
 
 }
 
