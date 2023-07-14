@@ -2,8 +2,6 @@
 
 **Python bindings for Marlowe_Lang [marlowe-rs](https://github.com/OlofBlomqvist/marlowe-rs).**
 
-Main repository: [https://github.com/OlofBlomqvist/marlowe-py](https://github.com/OlofBlomqvist/marlowe-py)
-
 ### Features
 
 - Deserialize contracts from: cbor-hex, dsl, json.
