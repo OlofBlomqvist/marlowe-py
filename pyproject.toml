@@ -9,6 +9,9 @@ path = "src/lib.rs"
 [project]
 name = "marlowe"
 requires-python = ">=3.7"
+readme = "README.md"
+description = "marlowe-rs bindings for using cardano marlowe in python"
+repository = "https://github.com/olofblomqvist/marlowe-py"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",

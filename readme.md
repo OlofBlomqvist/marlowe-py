@@ -2,6 +2,8 @@
 
 **Python bindings for Marlowe_Lang [marlowe-rs](https://github.com/OlofBlomqvist/marlowe-rs).**
 
+Main repository: [https://github.com/OlofBlomqvist/marlowe-py](https://github.com/OlofBlomqvist/marlowe-py)
+
 ### Features
 
 - Deserialize contracts from: cbor-hex, dsl, json.
@@ -16,14 +18,22 @@
 
 ### How to install
 
-No package has been published to PyPi yet - for now, you need download and pip install marlowepy.gz
+```bash
+pip install marlowe
+```
+
+Or pip install wlh files directly:
+- release versions: https://github.com/OlofBlomqvist/marlowe-py/releases
+- latest builds artifact: https://github.com/OlofBlomqvist/marlowe-py/actions/workflows/wheely.yml
+
 
 ### How to use
 
-- See the notebook for example usage.
+See the example notebook [here](https://github.com/OlofBlomqvist/marlowe-py/blob/main/example.ipynb).
 
-### How to build
 
-- See [development.md](./development.md)
+### Building from source
+
+- See [development.md](https://github.com/OlofBlomqvist/marlowe-py/blob/main/development.md)
 
 
