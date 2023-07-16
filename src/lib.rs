@@ -1,5 +1,4 @@
 use pyo3::prelude::*;
-
 pub mod pytypes;
 
 #[pyfunction]
@@ -23,9 +22,15 @@ pub fn try_decode_any_cbor_hex(cbor_hex:&str) -> PyResult<String> {
 pub fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(decode_redeemer_from_cbor_hex, m)?)?;
     m.add_function(wrap_pyfunction!(try_decode_any_cbor_hex, m)?)?;
-    m.add_class::<pytypes::WrappedCase>()?;
-    m.add_class::<pytypes::WrappedContract>()?;
-    m.add_class::<pytypes::WrappedDatum>()?;
+    m.add_class::<pytypes::Case>()?;
+    m.add_class::<pytypes::Contract>()?;
+    m.add_class::<pytypes::Datum>()?;
+    m.add_class::<pytypes::Token>()?;
+    m.add_class::<pytypes::Party>()?;
+    m.add_class::<pytypes::Value>()?;
+    m.add_class::<pytypes::Bound>()?;
+    m.add_class::<pytypes::Observation>()?;
+    m.add_class::<pytypes::Timeout>()?;
+    
     Ok(())
 }
-
