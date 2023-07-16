@@ -1,3 +1,5 @@
+[![PyPI version](https://badge.fury.io/py/marlowe.svg)](https://pypi.org/project/marlowe/)
+
 ## MARLOWE-PY
 
 **Python bindings for Marlowe_Lang [marlowe-rs](https://github.com/OlofBlomqvist/marlowe-rs).**
