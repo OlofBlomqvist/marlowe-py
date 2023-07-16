@@ -1,4 +1,7 @@
 [![PyPI version](https://badge.fury.io/py/marlowe.svg)](https://pypi.org/project/marlowe/)
+[![Downloads](https://static.pepy.tech/badge/marlowe)](https://pepy.tech/project/marlowe)
+
+
 
 ## MARLOWE-PY
 
