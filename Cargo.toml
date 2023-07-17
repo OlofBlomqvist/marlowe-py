@@ -14,3 +14,4 @@ path = "src/lib.rs"
 pyo3 = { version = "0.19.0", features = ["full"] }
 #marlowe_lang = "*"
 marlowe_lang = { git = "https://github.com/olofblomqvist/marlowe-rs", features=["utils","unstable"] }
+serde_json = "1.0.103"

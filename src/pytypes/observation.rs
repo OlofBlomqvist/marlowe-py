@@ -7,6 +7,14 @@ pub struct Observation(pub(crate) marlowe_lang::types::marlowe::Observation);
 
 #[pymethods]
 impl Observation {
+
+    
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+        crate::code_gen::observation_as_python(&self.0)
+    }
+
+
     #[pyo3(text_signature = "($self, f)")]
     pub fn as_string(&self) -> String {
         format!("{:?}", self.0)

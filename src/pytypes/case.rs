@@ -1,5 +1,5 @@
 use pyo3::{PyResult, pyclass, pymethods, exceptions::PyValueError};
-use super::*;
+use super::{*, contract::PossiblyMerkleizedContract};
 
 #[pyclass]
 #[derive(Clone,Debug)]
@@ -7,6 +7,12 @@ pub struct Case(pub(crate)marlowe_lang::types::marlowe::Case);
 
 #[pymethods]
 impl Case {
+
+    
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+        crate::code_gen::case_as_python(&self.0)
+    }
 
     #[pyo3(text_signature = "($self, f)")] pub fn as_string(&self) -> String { format!("{:?}",self.0) }
     #[pyo3(text_signature = "($self, f)")]
@@ -17,22 +23,22 @@ impl Case {
         }        
     }
 
+    
     #[staticmethod]
     #[pyo3(name="Notify")]
-    fn notify(observation:Observation,then_continue_with:Contract) -> Self {
+    fn notify(observation:Observation,then_continue_with:PossiblyMerkleizedContract) -> Self {
         Case(marlowe_lang::types::marlowe::Case { 
             case: Some(marlowe_lang::types::marlowe::Action::Notify { 
                 notify_if: Some(observation.0) 
             }), 
-            then: Some(marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(
-                Box::new(then_continue_with.0)
-            ))
+            then: Some(then_continue_with.0)
         })
     }
 
+    
     #[staticmethod]
     #[pyo3(name="Choice")]
-    fn choice(choice_name:&str,choice_owner:Party,bounds:Vec<Bound>,then_continue_with:Contract) -> Case {
+    fn choice(choice_name:&str,choice_owner:Party,bounds:Vec<Bound>,then_continue_with:PossiblyMerkleizedContract) -> Case {
         Case(
             marlowe_lang::types::marlowe::Case { 
                 case: Some(marlowe_lang::types::marlowe::Action::Choice { 
@@ -43,13 +49,13 @@ impl Case {
                     choose_between: bounds.iter().map(|x| 
                         marlowe_lang::types::marlowe::Bound(x.0.0,x.0.1)).map(Some).collect()
                 }),
-                then: Some(marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(Box::new(then_continue_with.0)))
+                then: Some(then_continue_with.0)
         })
     }
 
     #[staticmethod]
     #[pyo3(name="Deposit")]
-    fn deposit(into_account:Party,by:Party,of_token:Token,value:Value,then_continue_with:Contract) -> Case {
+    fn deposit(into_account:Party,by:Party,of_token:Token,value:Value,then_continue_with:PossiblyMerkleizedContract) -> Case {
         Case(
             marlowe_lang::types::marlowe::Case { 
                 case: Some(marlowe_lang::types::marlowe::Action::Deposit { 
@@ -59,7 +65,7 @@ impl Case {
                     deposits: Some(value.0) 
                 }     
             ),
-                then: Some(marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(Box::new(then_continue_with.0)))
+            then: Some(then_continue_with.0)
         })
     }
 }

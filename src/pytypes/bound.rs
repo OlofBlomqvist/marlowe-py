@@ -1,5 +1,4 @@
 use pyo3::{PyResult, pyclass, pymethods, exceptions::PyValueError};
-use super::*;
 
 #[pyclass]
 #[derive(Clone,Debug)]
@@ -7,6 +6,12 @@ pub struct Bound(pub(crate)marlowe_lang::types::marlowe::Bound);
 
 #[pymethods]
 impl Bound {
+    
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+        crate::code_gen::bound_as_python(&self.0)
+    }
+
     #[pyo3(text_signature = "($self, f)")] pub fn as_string(&self) -> String { format!("{:?}",self.0) }
     #[pyo3(text_signature = "($self, f)")]
     pub fn as_json(&self) -> PyResult<String> {

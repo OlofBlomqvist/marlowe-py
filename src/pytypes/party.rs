@@ -9,6 +9,11 @@ pub struct Party(pub(crate)marlowe_lang::types::marlowe::Party);
 #[pymethods]
 impl Party {
 
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+      crate::code_gen::party_as_python(&self.0)
+    }
+
     #[pyo3(text_signature = "($self, f)")] pub fn as_string(&self) -> String { format!("{:?}",self.0) }
     #[pyo3(text_signature = "($self, f)")]
     pub fn as_json(&self) -> PyResult<String> {

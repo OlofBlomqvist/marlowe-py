@@ -1,6 +1,70 @@
+
 use pyo3::{PyResult, pyclass, pymethods, exceptions::PyValueError};
 use super::*;
 
+#[pyclass]
+#[derive(Clone,Debug)]
+pub struct PossiblyMerkleizedContract(pub(crate)marlowe_lang::types::marlowe::PossiblyMerkleizedContract);
+
+#[pymethods]
+impl PossiblyMerkleizedContract {
+    
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+        match &self.0 {
+            marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(c) => {
+                format!("PossiblyMerkleizedContract.Raw({})",crate::code_gen::contract_box_as_python(&c))
+            },
+            marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Merkleized(r) => {
+                format!("PossiblyMerkleizedContract.Merkleized({r})")
+            },
+        }
+    }
+
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_string(&self) -> String {
+        format!("{:?}",self.0)
+    }
+
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_marlowe_dsl(&self) -> String  {
+        match &self.0 {
+            marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(c) => {
+                crate::code_gen::contract_box_as_python(&c)
+            },
+            marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Merkleized(r) => {
+                format!("\"{r}\"")
+            },
+        }
+    }
+
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_json(&self) -> PyResult<String> {
+        match serde_json::to_string_pretty(&self.0) {
+            Ok(v) => Ok(format!("{}",v)),
+            Err(e) => Err(PyValueError::new_err(format!("e:?")))
+        }
+    }   
+
+
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn show_status(&self) -> PyResult<String> {
+        match &self.0 {
+            marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(c) => Contract(*c.clone()).show_status(),
+            marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Merkleized(m) => Ok(format!("Merkleized contract: '{m}'")),
+        }
+    }
+
+    
+    #[staticmethod]
+    pub fn merkleized(hash:&str) -> Self {
+       Self(marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Merkleized(hash.into()))
+    }
+    #[staticmethod]
+    pub fn raw(contract:Contract) -> Self {
+       Self(marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(Box::new(contract.0)))
+    }
+}
 
 #[pyclass]
 #[derive(Clone,Debug)]
@@ -8,6 +72,11 @@ pub struct Contract(pub(crate)marlowe_lang::types::marlowe::Contract);
 
 #[pymethods]
 impl Contract {
+    
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+        crate::code_gen::contract_as_python(&self.0)
+    }
 
     #[pyo3(text_signature = "($self, f)")]
     pub fn as_string(&self) -> String {
@@ -50,7 +119,6 @@ impl Contract {
        }
     }
 
-
     #[pyo3(text_signature = "($self, f)")]
     pub fn show_status(&self) -> PyResult<String> {
         let instance = marlowe_lang::semantics::ContractInstance::new(&self.0.clone(), None);
@@ -68,11 +136,9 @@ impl Contract {
         }   
     }
 
-
-    
     #[staticmethod]
     #[pyo3(name="When")]
-    fn when(case: Vec<Case>, contract: Contract, timeout: Timeout) -> PyResult<Self> {
+    fn when(case: Vec<Case>, timeout: Timeout, timeout_continuation: Contract) -> PyResult<Self> {
         let mut cc = vec![];
         for x in case {
             cc.push(Some(marlowe_lang::types::marlowe::Case { 
@@ -83,54 +149,56 @@ impl Contract {
         Ok(Contract(marlowe_lang::types::marlowe::Contract::When { 
             when: cc, 
             timeout: Some(timeout.0), 
-            timeout_continuation: Some(Box::new(contract.0))
+            timeout_continuation: Some(Box::new(timeout_continuation.0))
         }))
     }  
-        
+            
     #[staticmethod]
     #[pyo3(name="Close")]
     fn close() -> Self {
        Contract(marlowe_lang::types::marlowe::Contract::Close)
     }
 
+    
     #[staticmethod]
     #[pyo3(name="Assert")]
-    fn assert() -> Self {
+    fn assert(observation:Observation,then:Contract) -> Self {
         Self(marlowe_lang::types::marlowe::Contract::Assert { 
-            assert: None, 
-            then: None 
+            assert: Some(observation.0), 
+            then: Some(Box::new(then.0)) 
         })
     }
 
+    
     #[staticmethod]
     #[pyo3(name="If")]
-    fn r#if() -> Self {
+    fn r#if(r#if:Observation,then:Contract,r#else:Contract) -> Self {
         Self(marlowe_lang::types::marlowe::Contract::If { 
-            x_if: None, 
-            then: None, 
-            x_else: None 
+            x_if: Some(r#if.0), 
+            then: Some(Box::new(then.0)), 
+            x_else: Some(Box::new(r#else.0)) 
         })
     }
 
     #[staticmethod]
     #[pyo3(name="Let")]
-    fn r#let() -> Self {
+    fn r#let(variable_name:&str, be: Value, then: Contract) -> Self {
         Self(marlowe_lang::types::marlowe::Contract::Let { 
-            x_let: marlowe_lang::types::marlowe::ValueId::Name("hello".into()), 
-            be:None, 
-            then: None 
+            x_let: marlowe_lang::types::marlowe::ValueId::Name(variable_name.into()), 
+            be: Some(Box::new(be.0)), 
+            then: Some(Box::new(then.0)) 
         })
     }
 
     #[staticmethod]
     #[pyo3(name="Pay")]
-    fn pay() -> Self {
+    fn pay(from_account_of:Party,to:Payee,token:Token,pay:Value,then:Contract) -> Self {
         Self(marlowe_lang::types::marlowe::Contract::Pay { 
-            from_account: None, 
-            to: None, 
-            token: None, 
-            pay: None, 
-            then: None 
+            from_account: Some(from_account_of.0), 
+            to: Some(to.0), 
+            token: Some(token.0), 
+            pay: Some(pay.0), 
+            then: Some(Box::new(then.0)) 
         })
     }
 

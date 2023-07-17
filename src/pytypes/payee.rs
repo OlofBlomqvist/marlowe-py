@@ -1,18 +1,20 @@
 use pyo3::{PyResult, pyclass, pymethods, exceptions::PyValueError};
+use super::*;
+
 
 #[pyclass]
 #[derive(Clone,Debug)]
-pub struct Timeout(pub(crate)marlowe_lang::types::marlowe::Timeout);
+pub struct Payee(pub(crate)marlowe_lang::types::marlowe::Payee);
 
 #[pymethods]
-impl Timeout {
+impl Payee {
 
-
-
+    
     #[pyo3(text_signature = "($self, f)")]
     pub fn as_python(&self) -> String {
-        crate::code_gen::timeout_as_python(&self.0)
+        crate::code_gen::payee_as_python(&self.0)
     }
+
 
     #[pyo3(text_signature = "($self, f)")] pub fn as_string(&self) -> String { format!("{:?}",self.0) }
     #[pyo3(text_signature = "($self, f)")]
@@ -23,16 +25,15 @@ impl Timeout {
         }        
     }
 
+    #[staticmethod]
+    #[pyo3(name="Party")]
+    pub fn party(party:Party) -> Payee {
+        Payee(marlowe_lang::types::marlowe::Payee::Party(Some(party.0)))
+    }
     
     #[staticmethod]
-    #[pyo3(name="TimeConstant")]
-    pub fn posix(time:i64) -> Self {
-        Self(marlowe_lang::types::marlowe::Timeout::TimeConstant(time))
-    }
-
-    #[staticmethod]
-    #[pyo3(name="TimeParam")]
-    pub fn time_param(time:&str) -> Self {
-        Self(marlowe_lang::types::marlowe::Timeout::TimeParam(time.into()))
+    #[pyo3(name="Account")]
+    pub fn role(party:Party) -> Payee {
+        Payee(marlowe_lang::types::marlowe::Payee::Account(Some(party.0)))
     }
 }

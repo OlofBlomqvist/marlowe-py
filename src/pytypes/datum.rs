@@ -10,6 +10,13 @@ pub struct Datum(pub(crate)marlowe_lang::types::marlowe::MarloweDatum);
 #[pymethods]
 impl Datum {
 
+    
+    #[pyo3(text_signature = "($self, f)")]
+    pub fn as_python(&self) -> String {
+        crate::code_gen::datum_as_python(&self.0)
+    }
+
+
     #[pyo3(text_signature = "($self, f)")] 
     pub fn as_string(&self) -> String { format!("{:?}",self.0) }
 
