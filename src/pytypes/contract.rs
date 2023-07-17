@@ -162,9 +162,9 @@ impl Contract {
     
     #[staticmethod]
     #[pyo3(name="Assert")]
-    fn assert(observation:Observation,then:Contract) -> Self {
+    fn assert(obs:Observation,then:Contract) -> Self {
         Self(marlowe_lang::types::marlowe::Contract::Assert { 
-            assert: Some(observation.0), 
+            assert: Some(obs.0), 
             then: Some(Box::new(then.0)) 
         })
     }
@@ -172,11 +172,11 @@ impl Contract {
     
     #[staticmethod]
     #[pyo3(name="If")]
-    fn r#if(r#if:Observation,then:Contract,r#else:Contract) -> Self {
+    fn r#if(obs:Observation,then:Contract,else_contract:Contract) -> Self {
         Self(marlowe_lang::types::marlowe::Contract::If { 
-            x_if: Some(r#if.0), 
+            x_if: Some(obs.0), 
             then: Some(Box::new(then.0)), 
-            x_else: Some(Box::new(r#else.0)) 
+            x_else: Some(Box::new(else_contract.0)) 
         })
     }
 

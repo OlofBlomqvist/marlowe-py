@@ -23,7 +23,7 @@ impl Value {
         }        
     }
     #[staticmethod]
-    #[pyo3(name="Add")]
+    #[pyo3(name="AddValue")]
     fn add(value_one:Value,value_two:Value) -> Self {
         Self(
             marlowe_lang::types::marlowe::Value::AddValue(
@@ -34,7 +34,7 @@ impl Value {
     }
 
     #[staticmethod]
-    #[pyo3(name="Divide")]
+    #[pyo3(name="DivValue")]
     fn divide(value:Value,by:Value) -> Self {
         Self(
             marlowe_lang::types::marlowe::Value::DivValue(
@@ -81,11 +81,11 @@ impl Value {
 
     #[staticmethod]
     #[pyo3(name="SubValue")]
-    fn sub_value(subtract:Value,from:Value) -> Self {
+    fn sub_value(subtract:Value,from_val:Value) -> Self {
         Self(
             marlowe_lang::types::marlowe::Value::SubValue(
                 Some(Box::new(subtract.0)), 
-                Some(Box::new(from.0)
+                Some(Box::new(from_val.0)
             ))
         )
     }
@@ -142,12 +142,12 @@ impl Value {
 
     #[staticmethod]
     #[pyo3(name="Cond")]
-    fn condition(r#if:Observation,value:Value,r#else:Value) -> Self {
+    fn condition(if_obs:Observation,then_val:Value,else_val:Value) -> Self {
         Self(
             marlowe_lang::types::marlowe::Value::Cond(
-                Some(r#if.0),
-                Some(Box::new(value.0)),
-                Some(Box::new(r#else.0))
+                Some(if_obs.0),
+                Some(Box::new(then_val.0)),
+                Some(Box::new(else_val.0))
             )
         )
     }

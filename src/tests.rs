@@ -29,51 +29,91 @@ fn as_python() {
     let temp_file_name = "temp_test_code_gen.py";
     let mut temp_file = std::fs::File::create(temp_file_name.clone()).unwrap();
 
-    let dsl = r#"
-    When [
-  (Case
-     (Deposit (Role "Seller") (Role "Buyer")
-        (Token "" "")
-        (ConstantParam "Price"))
-     (When [
-           (Case
-              (Choice
-                 (ChoiceId "Everything is alright" (Role "Buyer")) [
-                 (Bound 0 0)]) Close)
-           ,
-           (Case
-              (Choice
-                 (ChoiceId "Report problem" (Role "Buyer")) [
-                 (Bound 1 1)])
-              (Pay (Role "Seller")
-                 (Account (Role "Buyer"))
-                 (Token "" "")
-                 (ConstantParam "Price")
-                 (When [
+    let dsl = r#"When [
+        (Case
+           (Deposit (Role "Lender") (Role "Lender")
+              (Token "" "")
+              (ConstantParam "Amount"))
+           (Pay (Role "Lender")
+              (Party (Role "Borrower"))
+              (Token "" "")
+              (ConstantParam "Amount")
+              (When [
+                 (Case
+                    (Deposit (Role "Borrower") (Role "Borrower")
+                       (Token "" "")
+                       (AddValue
+                          (ConstantParam "Interest")
+                          (ConstantParam "Amount")))
+                    (Pay (Role "Borrower")
+                       (Party (Role "Lender"))
+                       (Token "" "")
+                       (AddValue
+                          (ConstantParam "Interest")
+                          (ConstantParam "Amount")) Close))] (TimeParam "Payback deadline") Close)))] (TimeParam "Loan deadline") (When [
+        (Case
+           (Deposit (Role "Party") (Role "Party")
+              (Token "" "")
+              (ConstantParam "Amount paid by party"))
+           (When [
+              (Case
+                 (Deposit (Role "Counterparty") (Role "Counterparty")
+                    (Token "" "")
+                    (ConstantParam "Amount paid by counterparty"))
+                 (When [] (TimeParam "First window beginning")
+                    (When [
                        (Case
                           (Choice
-                             (ChoiceId "Confirm problem" (Role "Seller")) [
-                             (Bound 1 1)]) Close)
-                       ,
-                       (Case
-                          (Choice
-                             (ChoiceId "Dispute problem" (Role "Seller")) [
-                             (Bound 0 0)])
-                          (When [
+                             (ChoiceId "Price in first window" (Role "Oracle")) [
+                             (Bound 0 1000000000)])
+                          (When [] (TimeParam "Second window beginning")
+                             (When [
                                 (Case
                                    (Choice
-                                      (ChoiceId "Dismiss claim" (Role "Mediator")) [
-                                      (Bound 0 0)])
-                                   (Pay (Role "Buyer")
-                                      (Party (Role "Seller"))
-                                      (Token "" "")
-                                      (ConstantParam "Price") Close))
-                                ,
-                                (Case
-                                   (Choice
-                                      (ChoiceId "Confirm problem" (Role "Mediator")) [
-                                      (Bound 1 1)]) Close)] (TimeParam "Mediation deadline") Close))] (TimeParam "Complaint response deadline") Close)))] (TimeParam "Complaint deadline") Close))] (TimeParam "Payment deadline") Close
-    "#.trim();
+                                      (ChoiceId "Price in second window" (Role "Oracle")) [
+                                      (Bound 0 1000000000)])
+                                   (If
+                                      (ValueGT
+                                         (ChoiceValue
+                                            (ChoiceId "Price in first window" (Role "Oracle")))
+                                         (ChoiceValue
+                                            (ChoiceId "Price in second window" (Role "Oracle"))))
+                                      (Let "Decrease in price"
+                                         (SubValue
+                                            (ChoiceValue
+                                               (ChoiceId "Price in first window" (Role "Oracle")))
+                                            (ChoiceValue
+                                               (ChoiceId "Price in second window" (Role "Oracle"))))
+                                         (Pay (Role "Counterparty")
+                                            (Account (Role "Party"))
+                                            (Token "" "")
+                                            (Cond
+                                               (ValueLT
+                                                  (UseValue "Decrease in price")
+                                                  (ConstantParam "Amount paid by counterparty"))
+                                               (UseValue "Decrease in price")
+                                               (ConstantParam "Amount paid by counterparty")) Close))
+                                      (If
+                                         (ValueLT
+                                            (ChoiceValue
+                                               (ChoiceId "Price in first window" (Role "Oracle")))
+                                            (ChoiceValue
+                                               (ChoiceId "Price in second window" (Role "Oracle"))))
+                                         (Let "Increase in price"
+                                            (SubValue
+                                               (ChoiceValue
+                                                  (ChoiceId "Price in second window" (Role "Oracle")))
+                                               (ChoiceValue
+                                                  (ChoiceId "Price in first window" (Role "Oracle"))))
+                                            (Pay (Role "Party")
+                                               (Account (Role "Counterparty"))
+                                               (Token "" "")
+                                               (Cond
+                                                  (ValueLT
+                                                     (UseValue "Increase in price")
+                                                     (ConstantParam "Amount paid by party"))
+                                                  (UseValue "Increase in price")
+                                                  (ConstantParam "Amount paid by party")) Close)) Close)))] (TimeParam "Second window deadline") Close)))] (TimeParam "First window deadline") Close)))] (TimeParam "Counterparty deposit deadline") Close))] (TimeParam "Party deposit deadline") Close)"#.trim();
 
     let parse_result = marlowe_lang::deserialization::marlowe::deserialize(dsl)
         .expect("should be possible to deserialize basic contract..");
@@ -91,11 +131,12 @@ fn as_python() {
     match result {
         Ok(result) => {
             let mut inputs = std::collections::HashMap::<String,i64>::new();
-            inputs.insert("Price".into(), 42);
-            inputs.insert("Mediation deadline".into(),999);
-            inputs.insert("Complaint response deadline".into(),11);
-            inputs.insert("Complaint deadline".into(),999);
-            inputs.insert("Payment deadline".into(),11111111);
+            for x in &parse_result.uninitialized_const_params {
+                inputs.insert(x.clone(),42);
+            }
+            for x in &parse_result.uninitialized_time_params {
+                inputs.insert(x.clone(),88888888);
+            }
             let python_result_dsl_converted_to_json = 
                 marlowe_lang::deserialization::marlowe::deserialize_with_input(&result,inputs.clone())
                     .expect("should be able to parse the python result.")

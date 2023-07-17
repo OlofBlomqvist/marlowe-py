@@ -54,7 +54,7 @@ impl Datum {
                 marlowe_lang::semantics::MachineState::WaitingForInput { expected, timeout } => {
                     Ok(format!("waiting for input until {timeout}: \n {:?}", expected))
                 },
-                marlowe_lang::semantics::MachineState::ReadyForNextStep => todo!(),
+                marlowe_lang::semantics::MachineState::ReadyForNextStep => Err(to_py_err("invalid - probably a bug in marlowe-rs")),
             }
             Err(e) => Err(to_py_err(&format!("{:?}",e)))
         }   

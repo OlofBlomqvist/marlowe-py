@@ -19,6 +19,25 @@ pub fn datum_as_python(x:&MarloweDatum) -> String {
     )
 }
 
+pub fn choice_id_opt_break(x:&Option<ChoiceId>) -> (String,String) {
+    if let Some(xx) = x {
+        choice_id_break(xx)
+    } else {
+        (String::from("null"),String::from("null"))
+    }
+}
+pub fn choice_id_break(x:&ChoiceId) -> (String,String) {
+    match x {
+        ChoiceId { choice_name, choice_owner } => {
+            (
+                format!("\"{}\"",choice_name),
+                opt_py(&choice_owner, party_as_python)
+            )
+        }
+    }
+}
+
+
 pub fn payee_as_python(x:&Payee) -> String {
     match &x {
         Payee::Account(p) => {
@@ -36,26 +55,29 @@ pub fn payee_as_python(x:&Payee) -> String {
     }
 }
 
+pub fn observation_box_as_python(x:&Box<Observation>) -> String {observation_as_python(x)}
 pub fn observation_as_python(x:&Observation) -> String {
     match &x {
-        Observation::AndObs { both: _, and: _ } => 
-            todo!(),
-        Observation::OrObs { either: _, or: _ } => 
-            todo!(),
-        Observation::NotObs { not: _ } => 
-            todo!(),
-        Observation::ChoseSomething(_) => 
-            todo!(),
-        Observation::ValueGE { value: _, ge_than: _ } => 
-            todo!(),
-        Observation::ValueGT { value: _, gt_than: _ } => 
-            todo!(),
-        Observation::ValueLT { value: _, lt_than: _ } => 
-            todo!(),
-        Observation::ValueLE { value: _, le_than: _ } => 
-            todo!(),
-        Observation::ValueEQ { value: _, equal_to: _ } => 
-            todo!(),
+        Observation::AndObs { both, and} => 
+            format!("Observation.AndObs({},{})", opt_py(both, observation_box_as_python), opt_py(and,observation_box_as_python)),
+        Observation::OrObs { either, or} => 
+            format!("Observation.OrObs({},{})", opt_py(either, observation_box_as_python), opt_py(or,observation_box_as_python)),
+        Observation::NotObs { not} => 
+            format!("Observation.NotObs({})", opt_py(not, observation_box_as_python)),
+        Observation::ChoseSomething(x) => {
+            let (choice_name,party) : (String,String) = choice_id_opt_break(x);
+            format!("Observation.ChoseSomething(choice_name={choice_name}, party={party})" )
+        },
+        Observation::ValueGE { value, ge_than } => 
+            format!("Observation.ValueGE({},{})", opt_py(value,value_box_as_python), opt_py(ge_than,value_box_as_python)),
+        Observation::ValueGT { value, gt_than } => 
+            format!("Observation.ValueGT({},{})", opt_py(value,value_box_as_python), opt_py(gt_than,value_box_as_python)),
+        Observation::ValueLT { value, lt_than } => 
+            format!("Observation.ValueLT({},{})", opt_py(value,value_box_as_python), opt_py(lt_than,value_box_as_python)),
+        Observation::ValueLE { value, le_than } => 
+            format!("Observation.ValueLE({},{})", opt_py(value,value_box_as_python), opt_py(le_than,value_box_as_python)),
+        Observation::ValueEQ { value, equal_to} => 
+            format!("Observation.ValueEQ({},{})", opt_py(value,value_box_as_python), opt_py(equal_to,value_box_as_python)),
         Observation::True => 
             "Observation.FalseObs()".into(),
         Observation::False => 
@@ -66,35 +88,46 @@ pub fn observation_as_python(x:&Observation) -> String {
 pub fn value_box_as_python(x:&Box<Value>) -> String {value_as_python(x)}
 pub fn value_as_python(x:&Value) -> String {
     match &x {
-        Value::AvailableMoney(_a, _b) => {
-            todo!()
+        Value::AvailableMoney(party, token) => {
+            let party_py = opt_py(party, party_as_python);
+            let token_py = opt_py(token, token_as_python);
+            format!("Value.AvailableMoney(account_of={party_py},token={token_py})")
+            
         },
-        Value::ConstantValue(_x) => {
-            todo!()
+        Value::ConstantValue(x) => {
+            format!("Value.Constant({x})")
         },
-        Value::NegValue(_x) => {
-            todo!()
+        Value::NegValue(x) => {
+            format!("Value.NegValue({})",opt_py(x, value_box_as_python))
         },
-        Value::AddValue(_a, _b) => {
-            todo!()
+        Value::AddValue(value_one, value_two) => {
+            format!("Value.AddValue(value_one={},value_two={})",opt_py(value_one, value_box_as_python),opt_py(value_two, value_box_as_python))
         },
-        Value::SubValue(_a, _b) => {
-            todo!()
+        Value::SubValue(a, b) => {
+            format!("Value.SubValue(subtract={},from_val={})",opt_py(a, value_box_as_python),opt_py(b, value_box_as_python))
         },
-        Value::MulValue(_a, _b) => {
-            todo!()
+        Value::MulValue(a, b) => {
+            format!("Value.MulValue(multiply={},by={})",opt_py(a, value_box_as_python),opt_py(b, value_box_as_python))
         },
-        Value::DivValue(_a, _b) => {
-            todo!()
+        Value::DivValue(a, b) => {
+            format!("Value.DivValue(divide={},by={})",opt_py(a, value_box_as_python),opt_py(b, value_box_as_python))
         },
-        Value::ChoiceValue(_x) => todo!(),
+        Value::ChoiceValue(x) => {
+            let (choice_name,choice_owner) = choice_id_opt_break(x);
+            format!("Value.ChoiceValue(choice_name={choice_name},choice_owner={choice_owner})")
+        },
         Value::TimeIntervalStart => "Value.TimeIntervalStart()".into(),
         Value::TimeIntervalEnd => "Value.TimeIntervalEnd()".into(),
-        Value::UseValue(_x) => {
-            todo!()
+        Value::UseValue(x) => {
+            match x {
+                ValueId::Name(name) => format!("Value.UseValue(\"{name}\")"),
+            }
         },
-        Value::Cond(_a,_b,_c) => {
-            todo!()
+        Value::Cond(r#if,value,r#else) => {
+            let if_obs = opt_py(r#if, observation_as_python);
+            let then_val = opt_py(value, value_box_as_python);
+            let else_val =opt_py(r#else, value_box_as_python);
+            format!("Value.Cond(if_obs={if_obs},then_val={then_val},else_val={else_val})")
         },
         Value::ConstantParam(x) => {
             format!("Value.ConstantParam(\"{x}\")")
@@ -133,10 +166,10 @@ pub fn case_as_python(x:&Case) -> String {
         Some(c) => {
             match c {
                 PossiblyMerkleizedContract::Raw(contract_continuation) => {
-                    format!("PossiblyMerkleizedContract.raw(contract={})",contract_box_as_python(contract_continuation))
+                    format!("PossiblyMerkleizedContract.raw({})",contract_box_as_python(contract_continuation))
                 },
                 PossiblyMerkleizedContract::Merkleized(m) => {
-                    format!("PossiblyMerkleizedContract.merkleized(hash=\"{m}\")")
+                    format!("PossiblyMerkleizedContract.merkleized(\"{m}\")")
                 },
             }
         },
@@ -150,9 +183,9 @@ pub fn case_as_python(x:&Case) -> String {
                 Some(_obs) => {
                     let obs_py = "null"; //Observation(obs.clone()).as_python();
                     let con_py = "null";
-                    format!("Case.Notify(observation={obs_py},then_continue_with={con_py})")
+                    format!("Case.Notify(obs={obs_py},then_continue_with={con_py})")
                 },
-                None => "Case.Notify(observation=null)".to_string(),
+                None => "Case.Notify(obs=null)".to_string(),
             }
         },
         Some(marlowe_lang::types::marlowe::Action::Deposit { into_account, party, of_token, deposits }) => {
@@ -160,7 +193,6 @@ pub fn case_as_python(x:&Case) -> String {
             let party_py = opt_py(party,party_as_python);
             let of_token_py = opt_py(of_token,token_as_python);
             let deposits_py = opt_py(deposits,value_as_python);
-            // fn deposit(into_account:Party,by:Party,of_token:Token,value:Value,then_continue_with:Contract) -> Case {
             format!("Case.Deposit(into_account={into_account_py},by={party_py},of_token={of_token_py},value={deposits_py},then_continue_with={continue_with_py})")
         },
         Some(marlowe_lang::types::marlowe::Action::Choice { for_choice, choose_between }) => {
@@ -214,7 +246,7 @@ pub fn contract_as_python(x:&Contract) -> String {
             let if_py = opt_py(x_if,observation_as_python);
             let then_py = opt_py(then,contract_box_as_python);
             let else_py = opt_py(x_else,contract_box_as_python);
-            format!("Contract.If(observation={if_py},then={then_py},else={else_py})")
+            format!("Contract.If(obs={if_py},then={then_py},else_contract={else_py})")
         },
         marlowe_lang::types::marlowe::Contract::When { when, timeout, timeout_continuation } => {
             
@@ -227,12 +259,12 @@ pub fn contract_as_python(x:&Contract) -> String {
             let ValueId::Name(var_name) = x_let;
             let be_py = opt_py(be,value_box_as_python);
             let then_py = opt_py(then,contract_box_as_python);
-            format!("Contract.Let(variable_name=\"{var_name}\"),be={be_py},then={then_py})")
+            format!("Contract.Let(variable_name=\"{var_name}\",be={be_py},then={then_py})")
         },
         marlowe_lang::types::marlowe::Contract::Assert { assert, then } => {
             let assert_py = opt_py(assert,observation_as_python);
             let then_py = opt_py(then,contract_box_as_python);
-            format!("Contract.Assert(observation={assert_py},then={then_py})")
+            format!("Contract.Assert(obs={assert_py},then={then_py})")
         },
     }
 }
