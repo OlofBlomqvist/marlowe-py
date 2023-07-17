@@ -15,6 +15,7 @@
 - Serialize contracts to json, dsl.
 - Serialize datums & redeemers to cbor-hex, json.
 - Unstable: View contract expected next inputs and other state info.
+- Unstable: Define contracts directly in Python.
 - Unstable: Code generator: Convert any contract to equivalent Python code
 
 
