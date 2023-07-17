@@ -24,13 +24,13 @@ pub fn payee_as_python(x:&Payee) -> String {
         Payee::Account(p) => {
             match p {
                 Some(inner_party) => format!("Payee.Account({})",party_as_python(inner_party)),
-                None => format!("Payee.Account(null)"),
+                None => "Payee.Account(null)".to_string(),
             }
         },
         Payee::Party(p) => {
             match p {
                 Some(inner_party) => format!("Payee.Party({})",party_as_python(inner_party)),
-                None => format!("Payee.Party(null)"),
+                None => "Payee.Party(null)".to_string(),
             }
         }
     }
@@ -38,23 +38,23 @@ pub fn payee_as_python(x:&Payee) -> String {
 
 pub fn observation_as_python(x:&Observation) -> String {
     match &x {
-        Observation::AndObs { both, and } => 
+        Observation::AndObs { both: _, and: _ } => 
             todo!(),
-        Observation::OrObs { either, or } => 
+        Observation::OrObs { either: _, or: _ } => 
             todo!(),
-        Observation::NotObs { not } => 
+        Observation::NotObs { not: _ } => 
             todo!(),
         Observation::ChoseSomething(_) => 
             todo!(),
-        Observation::ValueGE { value, ge_than } => 
+        Observation::ValueGE { value: _, ge_than: _ } => 
             todo!(),
-        Observation::ValueGT { value, gt_than } => 
+        Observation::ValueGT { value: _, gt_than: _ } => 
             todo!(),
-        Observation::ValueLT { value, lt_than } => 
+        Observation::ValueLT { value: _, lt_than: _ } => 
             todo!(),
-        Observation::ValueLE { value, le_than } => 
+        Observation::ValueLE { value: _, le_than: _ } => 
             todo!(),
-        Observation::ValueEQ { value, equal_to } => 
+        Observation::ValueEQ { value: _, equal_to: _ } => 
             todo!(),
         Observation::True => 
             "Observation.FalseObs()".into(),
@@ -63,37 +63,37 @@ pub fn observation_as_python(x:&Observation) -> String {
     }
 }
 
-pub fn value_box_as_python(x:&Box<Value>) -> String {value_as_python(*&x)}
+pub fn value_box_as_python(x:&Box<Value>) -> String {value_as_python(x)}
 pub fn value_as_python(x:&Value) -> String {
     match &x {
-        Value::AvailableMoney(a, b) => {
+        Value::AvailableMoney(_a, _b) => {
             todo!()
         },
-        Value::ConstantValue(x) => {
+        Value::ConstantValue(_x) => {
             todo!()
         },
-        Value::NegValue(x) => {
+        Value::NegValue(_x) => {
             todo!()
         },
-        Value::AddValue(a, b) => {
+        Value::AddValue(_a, _b) => {
             todo!()
         },
-        Value::SubValue(a, b) => {
+        Value::SubValue(_a, _b) => {
             todo!()
         },
-        Value::MulValue(a, b) => {
+        Value::MulValue(_a, _b) => {
             todo!()
         },
-        Value::DivValue(a, b) => {
+        Value::DivValue(_a, _b) => {
             todo!()
         },
-        Value::ChoiceValue(x) => todo!(),
+        Value::ChoiceValue(_x) => todo!(),
         Value::TimeIntervalStart => "Value.TimeIntervalStart()".into(),
         Value::TimeIntervalEnd => "Value.TimeIntervalEnd()".into(),
-        Value::UseValue(x) => {
+        Value::UseValue(_x) => {
             todo!()
         },
-        Value::Cond(a,b,c) => {
+        Value::Cond(_a,_b,_c) => {
             todo!()
         },
         Value::ConstantParam(x) => {
@@ -103,8 +103,8 @@ pub fn value_as_python(x:&Value) -> String {
 }
 
 pub fn token_as_python(x:&Token) -> String {
-    if x.token_name == "" && x.currency_symbol == "" {
-        format!("Token.ADA()")
+    if x.token_name.is_empty() && x.currency_symbol.is_empty() {
+        "Token.ADA()".to_string()
     } else {
         format!("Token.Custom(token_name=\"{}\",currency_symbol=\"{}\")",x.token_name,x.currency_symbol)
     }
@@ -147,12 +147,12 @@ pub fn case_as_python(x:&Case) -> String {
         Some(marlowe_lang::types::marlowe::Action::Notify { notify_if }) => {
             // observation:Observation,then_continue_with:Contract
             match notify_if {
-                Some(obs) => {
+                Some(_obs) => {
                     let obs_py = "null"; //Observation(obs.clone()).as_python();
                     let con_py = "null";
                     format!("Case.Notify(observation={obs_py},then_continue_with={con_py})")
                 },
-                None => format!("Case.Notify(observation=null)"),
+                None => "Case.Notify(observation=null)".to_string(),
             }
         },
         Some(marlowe_lang::types::marlowe::Action::Deposit { into_account, party, of_token, deposits }) => {
@@ -178,7 +178,7 @@ pub fn case_as_python(x:&Case) -> String {
                 None => ("null".into(),"null".into()),
             };
 
-            let bounds = choose_between.into_iter().flatten().map(|x|x.to_owned()).collect::<Vec<Bound>>();
+            let bounds = choose_between.iter().flatten().map(|x|x.to_owned()).collect::<Vec<Bound>>();
             let bounds_py = opt_py(&Some(bounds),bounds_as_python);
 
             // fn choice(choice_name:&str,choice_owner:Party,bounds:Vec<Bound>,then_continue_with:PossiblyMerkleizedContract) -> Case {
@@ -195,7 +195,7 @@ pub fn timeout_as_python(x:&Timeout) -> String {
     }
 }
 
-pub fn contract_box_as_python(x:&Box<Contract>) -> String { contract_as_python(*&x) }
+pub fn contract_box_as_python(x:&Box<Contract>) -> String { contract_as_python(x) }
 pub fn contract_as_python(x:&Contract) -> String {
     
     match x{
@@ -224,7 +224,7 @@ pub fn contract_as_python(x:&Contract) -> String {
             format!("Contract.When(case=[{cases_py}],timeout={timeout_py},timeout_continuation={timeout_continuation_py})")
         },
         marlowe_lang::types::marlowe::Contract::Let { x_let, be, then } => {
-            let var_name = match x_let { ValueId::Name(name) => name };
+            let ValueId::Name(var_name) = x_let;
             let be_py = opt_py(be,value_box_as_python);
             let then_py = opt_py(then,contract_box_as_python);
             format!("Contract.Let(variable_name=\"{var_name}\"),be={be_py},then={then_py})")
@@ -234,5 +234,5 @@ pub fn contract_as_python(x:&Contract) -> String {
             let then_py = opt_py(then,contract_box_as_python);
             format!("Contract.Assert(observation={assert_py},then={then_py})")
         },
-    }.into()
+    }
 }

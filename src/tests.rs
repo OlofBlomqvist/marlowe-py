@@ -1,18 +1,17 @@
-use std::convert::Infallible;
-use std::process::{Command, Output};
+#[cfg(test)]
+use std::process::Command;
+
+#[cfg(test)]
 use std::io::Write;
-use std::fs;
-use std::io;
-use std::path::PathBuf;
-use std::time::{SystemTime, Duration};
 
 
+#[cfg(test)]
 fn call_python_script(file_name:&str) -> Result<String, String> {
     let output = Command::new("python")
         .arg(file_name)
         .output()
         .expect("Failed to execute command");
-    if output.stderr.len() > 0 {
+    if !output.stderr.is_empty() {
         Err(String::from_utf8(output.stderr).map_err(|e|format!("{e:?}"))?)
 
     } else {
@@ -28,7 +27,7 @@ fn call_python_script(file_name:&str) -> Result<String, String> {
 fn as_python() {
 
     let temp_file_name = "temp_test_code_gen.py";
-    let mut temp_file = std::fs::File::create(&temp_file_name.clone()).unwrap();
+    let mut temp_file = std::fs::File::create(temp_file_name.clone()).unwrap();
 
     let dsl = r#"
     When [
@@ -87,8 +86,8 @@ fn as_python() {
     println!("generated python code: {}",&py_script);
     
     writeln!(temp_file, "{}",py_script).expect("should be able to save to temp file");
-    let result = call_python_script(&temp_file_name);
-    _ = std::fs::remove_file(temp_file_name).unwrap_or_default();
+    let result = call_python_script(temp_file_name);
+    std::fs::remove_file(temp_file_name).unwrap_or_default();
     match result {
         Ok(result) => {
             let mut inputs = std::collections::HashMap::<String,i64>::new();
@@ -102,7 +101,7 @@ fn as_python() {
                     .expect("should be able to parse the python result.")
                     .contract.to_json().unwrap();
             let original_dsl_converted_to_json = 
-                marlowe_lang::deserialization::marlowe::deserialize_with_input(&dsl,inputs.clone())
+                marlowe_lang::deserialization::marlowe::deserialize_with_input(dsl,inputs.clone())
                     .expect("should be able to parse the python result.")
                     .contract.to_json().unwrap();
             assert!(

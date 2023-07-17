@@ -13,7 +13,7 @@ impl PossiblyMerkleizedContract {
     pub fn as_python(&self) -> String {
         match &self.0 {
             marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(c) => {
-                format!("PossiblyMerkleizedContract.Raw({})",crate::code_gen::contract_box_as_python(&c))
+                format!("PossiblyMerkleizedContract.Raw({})",crate::code_gen::contract_box_as_python(c))
             },
             marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Merkleized(r) => {
                 format!("PossiblyMerkleizedContract.Merkleized({r})")
@@ -30,7 +30,7 @@ impl PossiblyMerkleizedContract {
     pub fn as_marlowe_dsl(&self) -> String  {
         match &self.0 {
             marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Raw(c) => {
-                crate::code_gen::contract_box_as_python(&c)
+                crate::code_gen::contract_box_as_python(c)
             },
             marlowe_lang::types::marlowe::PossiblyMerkleizedContract::Merkleized(r) => {
                 format!("\"{r}\"")
@@ -42,7 +42,7 @@ impl PossiblyMerkleizedContract {
     pub fn as_json(&self) -> PyResult<String> {
         match serde_json::to_string_pretty(&self.0) {
             Ok(v) => Ok(format!("{}",v)),
-            Err(e) => Err(PyValueError::new_err(format!("e:?")))
+            Err(_e) => Err(PyValueError::new_err("e:?".to_string()))
         }
     }   
 

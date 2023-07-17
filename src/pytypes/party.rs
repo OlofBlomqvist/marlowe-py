@@ -1,5 +1,4 @@
 use pyo3::{PyResult, pyclass, pymethods, exceptions::PyValueError};
-use super::*;
 
 
 #[pyclass]

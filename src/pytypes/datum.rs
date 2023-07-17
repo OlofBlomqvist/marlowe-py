@@ -1,4 +1,3 @@
-use marlowe_lang::semantics::ContractSemantics;
 use pyo3::{PyResult, pyclass, pymethods, exceptions::PyValueError};
 use super::*;
 
