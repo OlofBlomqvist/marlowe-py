@@ -178,14 +178,12 @@ pub fn case_as_python(x:&Case) -> String {
 
     match x.case.as_ref() {
         Some(marlowe_lang::types::marlowe::Action::Notify { notify_if }) => {
-            // observation:Observation,then_continue_with:Contract
             match notify_if {
                 Some(_obs) => {
-                    let obs_py = "null"; //Observation(obs.clone()).as_python();
-                    let con_py = "null";
-                    format!("Case.Notify(obs={obs_py},then_continue_with={con_py})")
+                    let obs_py = opt_py(notify_if, observation_as_python);
+                    format!("Case.Notify(obs={obs_py},then_continue_with={continue_with_py})")
                 },
-                None => "Case.Notify(obs=null)".to_string(),
+                None => format!("Case.Notify(obs=null,then_continue_with={continue_with_py})"),
             }
         },
         Some(marlowe_lang::types::marlowe::Action::Deposit { into_account, party, of_token, deposits }) => {
