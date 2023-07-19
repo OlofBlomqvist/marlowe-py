@@ -27,7 +27,7 @@ impl Token {
 
     #[staticmethod]
     fn from_json(json:&str) -> PyResult<Self> {
-       match marlowe_lang::deserialization::json::deserialize::<marlowe_lang::types::marlowe::Token>(json) {
+       match marlowe_lang::deserialization::json::deserialize::<marlowe_lang::types::marlowe::Token>(json.into()) {
         Ok(c) => Ok(Self(c)),
         Err(e) => Err(PyValueError::new_err(format!("did not work! {:?}",e)))
        }       
