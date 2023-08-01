@@ -10,10 +10,17 @@ on:
         required: true
         default: 'main'
 jobs:
-  build_linux:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: PyO3/maturin-action@v1
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Build with Maturin
+        uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release
+          cargo-extra-args: --release
