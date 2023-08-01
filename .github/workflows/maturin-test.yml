@@ -1,0 +1,19 @@
+# .github/workflows/maturin-test.yml
+
+name: Maturin Test
+
+on: 
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the workflow on'
+        required: true
+        default: 'main'
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release
