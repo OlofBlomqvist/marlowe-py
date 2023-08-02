@@ -21,7 +21,7 @@ jobs:
         with:
           command: build
           args: --release
-          manylinux: 2_24
+          manylinux: auto
           container: quay.io/pypa/manylinux_2_24_x86_64:latest
           rust-toolchain: nightly
           
