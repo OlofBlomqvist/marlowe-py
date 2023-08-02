@@ -1,4 +1,4 @@
-# .github/workflows/maturin-test.yml
+# .github/workflows/wheely_manylinux_2_24.yml
 
 name: Maturin Test
 
