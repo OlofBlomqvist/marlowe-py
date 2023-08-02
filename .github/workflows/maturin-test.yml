@@ -14,26 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          target: x86_64-unknown-linux-musl
-          default: true
-      
       - uses: actions/checkout@v2
       
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.11'
-
       - name: Build with Maturin
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          cargo-extra-args: --release
+          args: --release
           manylinux: auto
+          container: auto
+          rust-toolchain: nightly
           
       - name: Upload artifact
         uses: actions/upload-artifact@v2
