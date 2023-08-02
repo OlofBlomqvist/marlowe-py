@@ -21,8 +21,8 @@ jobs:
         with:
           command: build
           args: --release
-          manylinux: auto
-          container: auto
+          manylinux: 2_24
+          container: quay.io/pypa/manylinux_2_24_x86_64:latest
           rust-toolchain: nightly
           
       - name: Upload artifact
