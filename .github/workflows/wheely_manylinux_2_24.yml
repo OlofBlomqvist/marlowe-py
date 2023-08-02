@@ -20,7 +20,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release
+          args: --release --interpreter python3.10
           manylinux: auto
           rust-toolchain: nightly
           
