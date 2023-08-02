@@ -1,6 +1,6 @@
-# .github/workflows/wheely_manylinux_2_24.yml
+# .github/workflows/build_wheels.yml
 
-name: Maturin Test
+name: Build Wheels
 
 on: 
   workflow_dispatch:
