@@ -13,13 +13,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           target: x86_64-unknown-linux-musl
           default: true
+      
       - uses: actions/checkout@v2
+      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -30,3 +33,11 @@ jobs:
         with:
           command: build
           cargo-extra-args: --release
+          manylinux: auto
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: target/wheels
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the action if no files are found
