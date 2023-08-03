@@ -1,6 +1,6 @@
-# .github/workflows/on-push.yml
+# .github/workflows/wheely_old.yml
 
-name: Build Wheels
+name: Build Wheels OLD
 
 on: 
   workflow_dispatch:

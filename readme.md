@@ -30,10 +30,9 @@
 pip install marlowe
 ```
 
-Or pip install wlh files directly:
-- release versions: https://github.com/OlofBlomqvist/marlowe-py/releases
-- latest builds artifact: https://github.com/OlofBlomqvist/marlowe-py/actions/workflows/wheely.yml
-
+Alternatives:
+- pip install wlh files directly using builds artifacts from CI: https://github.com/OlofBlomqvist/marlowe-py/actions/workflows/build_wheels.yml
+- clone the repo, install prereqs: rust,python,maturin; run wheels.ps1 or wheels.sh
 
 ### How to use
 
