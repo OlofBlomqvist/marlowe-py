@@ -327,8 +327,9 @@ dependencies = [
 
 [[package]]
 name = "marlowe_lang"
-version = "0.2.0"
-source = "git+https://github.com/olofblomqvist/marlowe-rs#0bfcc10fc4f0826e8922d1eb5e47134c551f63f6"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b21b4f425b9d61222ccf703d3210b4d5bc96654c9d8c8e6d9efa1e64e05a1dc4"
 dependencies = [
  "bech32",
  "chrono",
@@ -612,9 +613,9 @@ checksum = "4c40d25201921e5ff0c862a505c6557ea88568a4e3ace775ab55e93f2f4f9d57"
 
 [[package]]
 name = "plutus_data"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a2c73f1bc4698543e26e18ead27b292f715c91a8d125174c521722ad278f788"
+checksum = "93e0a6d0ecbd437a74fa90a114e9dd1017bee705929a77a55b884764d1ea607d"
 dependencies = [
  "hex",
  "pallas",
@@ -625,9 +626,9 @@ dependencies = [
 
 [[package]]
 name = "plutus_data_derive"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "295a3c57ad40b10bedd23930512162aa7334106795447cc38b7f533365225dd4"
+checksum = "e72b80c43fca82f9e30284951ab6772a73c385e9bcc7f41527ab295dc10ee441"
 dependencies = [
  "hex",
  "quote",
