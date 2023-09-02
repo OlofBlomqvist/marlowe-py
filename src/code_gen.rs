@@ -160,37 +160,39 @@ pub fn party_as_python(x:&Party) -> String {
     }
 }
 
-pub fn case_as_python(x:&Case) -> String {
+pub fn case_as_python(x:&PossiblyMerkleizedCase) -> String {
     
-    let continue_with_py = match &x.then {
-        Some(c) => {
-            match c {
-                PossiblyMerkleizedContract::Raw(contract_continuation) => {
-                    format!("PossiblyMerkleizedContract.raw({})",contract_box_as_python(contract_continuation))
-                },
-                PossiblyMerkleizedContract::Merkleized(m) => {
-                    format!("PossiblyMerkleizedContract.merkleized(\"{m}\")")
-                },
-            }
+    let (continue_with_py,case) = match x {
+        PossiblyMerkleizedCase::Raw { case, then } => {
+            let py_continuation = if let Some(c) = then {
+                    format!("PossiblyMerkleizedContract.raw({})",contract_as_python(c))
+            } else {
+                    "null".into()
+            };
+            (py_continuation, case.clone())
         },
-        None => "null".into(),
+        PossiblyMerkleizedCase::Merkleized { case, then } => {
+           let py_continuation = format!("PossiblyMerkleizedContract.merkleized(\"{then}\")");
+           (py_continuation, Some(case.clone()))
+        }
     };
 
-    match x.case.as_ref() {
+
+    match case {
         Some(marlowe_lang::types::marlowe::Action::Notify { notify_if }) => {
-            match notify_if {
+            match &notify_if {
                 Some(_obs) => {
-                    let obs_py = opt_py(notify_if, observation_as_python);
+                    let obs_py = opt_py(&notify_if, observation_as_python);
                     format!("Case.Notify(obs={obs_py},then_continue_with={continue_with_py})")
                 },
                 None => format!("Case.Notify(obs=null,then_continue_with={continue_with_py})"),
             }
         },
         Some(marlowe_lang::types::marlowe::Action::Deposit { into_account, party, of_token, deposits }) => {
-            let into_account_py = opt_py(into_account,party_as_python);
-            let party_py = opt_py(party,party_as_python);
-            let of_token_py = opt_py(of_token,token_as_python);
-            let deposits_py = opt_py(deposits,value_as_python);
+            let into_account_py = opt_py(&into_account,party_as_python);
+            let party_py = opt_py(&party,party_as_python);
+            let of_token_py = opt_py(&of_token,token_as_python);
+            let deposits_py = opt_py(&deposits,value_as_python);
             format!("Case.Deposit(into_account={into_account_py},by={party_py},of_token={of_token_py},value={deposits_py},then_continue_with={continue_with_py})")
         },
         Some(marlowe_lang::types::marlowe::Action::Choice { for_choice, choose_between }) => {
@@ -200,7 +202,7 @@ pub fn case_as_python(x:&Case) -> String {
                     (
                         format!("\"{}\"",choice_name),
                         match choice_owner {
-                            Some(o) => party_as_python(o),
+                            Some(o) => party_as_python(&o),
                             _ => "null".into()
                         }
                     )
@@ -215,7 +217,8 @@ pub fn case_as_python(x:&Case) -> String {
             format!("Case.Choice(choice_name={choice_name_py}, choice_owner={choice_owner_py},bounds={bounds_py},then_continue_with={continue_with_py})")
         },
         None => "null".into()
-    }        
+    }     
+
 }
 
 pub fn timeout_as_python(x:&Timeout) -> String {

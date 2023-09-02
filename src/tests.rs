@@ -20,14 +20,13 @@ fn call_python_script(file_name:&str) -> Result<String, String> {
 }
 
 
-// todo: include one of each construct!
-// this test is too make sure that generated code produces 
+// this test is to make sure that generated code produces 
 // the same dsl back as the original input we genrated it from
 #[test]
 fn as_python() {
 
     let temp_file_name = "temp_test_code_gen.py";
-    let mut temp_file = std::fs::File::create(temp_file_name.clone()).unwrap();
+    let mut temp_file = std::fs::File::create(temp_file_name).unwrap();
 
     let dsl = r#"When [
         (Case
@@ -130,7 +129,7 @@ fn as_python() {
     std::fs::remove_file(temp_file_name).unwrap_or_default();
     match result {
         Ok(result) => {
-            let mut inputs = std::collections::HashMap::<String,i64>::new();
+            let mut inputs = std::collections::HashMap::<String,i128>::new();
             for x in &parse_result.uninitialized_const_params {
                 inputs.insert(x.clone(),42);
             }

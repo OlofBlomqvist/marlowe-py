@@ -96,7 +96,7 @@ impl Contract {
 
 
     #[staticmethod]
-    fn from_marlowe_dsl(dsl:&str,variables:Vec<(String, i64)>) -> PyResult<Self> {
+    fn from_marlowe_dsl(dsl:&str,variables:Vec<(String, i128)>) -> PyResult<Self> {
        match marlowe_lang::types::marlowe::Contract::from_dsl(dsl,variables) {
         Ok(c) => Ok(Contract(c)),
         Err(e) => Err(PyValueError::new_err(format!("did not work! {:?}",e)))
@@ -139,15 +139,14 @@ impl Contract {
     #[staticmethod]
     #[pyo3(name="When")]
     fn when(case: Vec<Case>, timeout: Timeout, timeout_continuation: Contract) -> PyResult<Self> {
-        let mut cc = vec![];
+        
+        let mut cases = vec![];
         for x in case {
-            cc.push(Some(marlowe_lang::types::marlowe::Case { 
-                case: x.0.case, 
-                then: x.0.then
-            }))
+            cases.push(Some(x.0))
         }
+
         Ok(Contract(marlowe_lang::types::marlowe::Contract::When { 
-            when: cc, 
+            when: cases, 
             timeout: Some(timeout.0), 
             timeout_continuation: Some(Box::new(timeout_continuation.0))
         }))

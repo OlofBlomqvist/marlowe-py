@@ -46,7 +46,7 @@ impl Value {
 
     #[staticmethod]
     #[pyo3(name="Constant")]
-    fn constant(value:i64) -> Self {
+    fn constant(value:i128) -> Self {
         Self(
             marlowe_lang::types::marlowe::Value::ConstantValue(value)
         )

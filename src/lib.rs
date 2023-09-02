@@ -30,9 +30,15 @@ pub fn merkleized(hash:&str) -> PossiblyMerkleizedContract {
     PossiblyMerkleizedContract::merkleized(hash)
 }
 
+#[pyfunction]
+pub fn version() -> String {
+    "marlowe-py: 0.1.5, marlowe-rs: 0.3.0".into()
+}
+
 #[pymodule]
 #[pyo3(name = "marlowe")]
 pub fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(version, m)?)?;
     m.add_function(wrap_pyfunction!(merkleized, m)?)?;
     m.add_function(wrap_pyfunction!(raw, m)?)?;
     m.add_function(wrap_pyfunction!(decode_redeemer_from_cbor_hex, m)?)?;

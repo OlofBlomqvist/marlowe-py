@@ -21,7 +21,7 @@ impl Bound {
         }        
     }
     #[new]
-    fn new(from: i64, to: i64) -> Self {
+    fn new(from: i128, to: i128) -> Self {
         Bound(marlowe_lang::types::marlowe::Bound(from,to))
     }
 

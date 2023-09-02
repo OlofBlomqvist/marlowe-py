@@ -1,6 +1,6 @@
 [package]
 name = "marlowe"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 
 [lib]
@@ -13,6 +13,7 @@ path = "src/lib.rs"
 pyo3 = { version = "0.19.1", features = ["full"] }
 #marlowe_lang = "*"
 #marlowe_lang = { git = "https://github.com/olofblomqvist/marlowe-rs", features=["utils","unstable"], default-features = false }
-marlowe_lang = {version="0.2.1", features=["utils","unstable"], default-features = false }
+marlowe_lang = {version="0.3.0", features=["utils","unstable"], default-features = false }
+#marlowe_lang = { path = "../marlowe_rust",features=["unstable","utils"], default-features = false }
 serde_json = "1.0.103"
 serde = "1.0.171"
