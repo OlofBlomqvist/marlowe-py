@@ -32,12 +32,33 @@ pub fn merkleized(hash:&str) -> PossiblyMerkleizedContract {
 
 #[pyfunction]
 pub fn version() -> String {
-    "marlowe-py: 0.1.5, marlowe-rs: 0.3.0".into()
+    "marlowe-py: 0.1.6, marlowe-rs: 0.3.2".into()
 }
+
+
+
+
+#[pyfunction]
+pub fn inputs_json_to_cbor(json:&str) -> PyResult<String> {
+
+    let deserialized : Vec<marlowe_lang::types::marlowe::InputAction> = 
+        marlowe_lang::deserialization::json::deserialize(json.into()).map_err(|e|pytypes::to_py_err(&e))?;
+
+    let action = deserialized.into_iter()
+        .map(marlowe_lang::types::marlowe::PossiblyMerkleizedInput::Action)
+        .collect::<Vec<marlowe_lang::types::marlowe::PossiblyMerkleizedInput>>();
+
+    marlowe_lang::serialization::cborhex::serialize(action).map_err(|e|pytypes::to_py_err(&e))
+
+}
+
 
 #[pymodule]
 #[pyo3(name = "marlowe")]
 pub fn rust(_py: Python, m: &PyModule) -> PyResult<()> {
+    
+    m.add_function(wrap_pyfunction!(inputs_json_to_cbor,m)?)?;
+
     m.add_function(wrap_pyfunction!(version, m)?)?;
     m.add_function(wrap_pyfunction!(merkleized, m)?)?;
     m.add_function(wrap_pyfunction!(raw, m)?)?;
